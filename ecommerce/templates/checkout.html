@@ -1,0 +1,181 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh toán</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .nav-main {
+            background-color: #2c6ebb;
+            padding: 15px;
+        }
+        .nav-main .navbar-brand img {
+            height: 40px;
+        }
+        .nav-main .nav-link {
+            color: white !important;
+        }
+        .checkout-section {
+            padding: 40px 0;
+        }
+        .order-summary {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .payment-method {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+        .payment-method.selected {
+            border-color: #28a745;
+            background-color: #f8fff8;
+        }
+        .payment-method input[type="radio"] {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg nav-main">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <img src="{% static 'images/pic.jpg' %}" alt="Logo">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'home' %}">Trang chủ</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    {% if user.is_authenticated %}
+                        <div class="cart-section me-3">
+                            <a href="{% url 'cart' %}" class="text-white">
+                                <i class="fas fa-shopping-cart"></i>
+                                <span class="badge bg-danger">{{ cart_count }}</span>
+                            </a>
+                        </div>
+                        <a href="{% url 'logout' %}" class="btn btn-outline-light">Đăng xuất</a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-outline-light me-2">Đăng nhập</a>
+                        <a href="{% url 'register' %}" class="btn btn-light">Đăng ký</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Checkout Section -->
+    <section class="checkout-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-8">
+                    <h2 class="mb-4">Thanh toán</h2>
+                    <form method="post" action="{% url 'place_order' %}">
+                        {% csrf_token %}
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5>Thông tin giao hàng</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="full_name" class="form-label">Họ và tên</label>
+                                    <input type="text" class="form-control" id="full_name" name="full_name" value="{{ user.get_full_name|default:user.username }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">Số điện thoại</label>
+                                    <input type="text" class="form-control" id="phone" name="phone" value="{{ user_profile.phone }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="address" class="form-label">Địa chỉ</label>
+                                    <textarea class="form-control" id="address" name="address" rows="3" required>{{ user_profile.address }}</textarea>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="city" class="form-label">Thành phố</label>
+                                        <input type="text" class="form-control" id="city" name="city" value="{{ user_profile.city }}" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="country" class="form-label">Quốc gia</label>
+                                        <input type="text" class="form-control" id="country" name="country" value="{{ user_profile.country }}" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5>Hình thức thanh toán</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="payment-method" onclick="selectPayment('cod')">
+                                    <input type="radio" name="payment_method" value="cod" id="cod" required>
+                                    <label for="cod">Thanh toán khi nhận được hàng</label>
+                                </div>
+                                <div class="payment-method" onclick="selectPayment('bank')">
+                                    <input type="radio" name="payment_method" value="bank" id="bank">
+                                    <label for="bank">Thanh toán qua ngân hàng</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success btn-lg w-100">Xác nhận</button>
+                    </form>
+                </div>
+                <div class="col-md-4">
+                    <div class="order-summary">
+                        <h4>Tóm tắt thanh toán</h4>
+                        <hr>
+                        {% for item in cart_items %}
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>{{ item.product.name }} x {{ item.quantity }}</span>
+                            <span>{{ item.total_price }} VNĐ</span>
+                        </div>
+                        {% endfor %}
+                        <hr>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Tổng cộng:</span>
+                            <span>{{ subtotal }} VNĐ</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Phí vận chuyển:</span>
+                            <span>Miễn phí</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-3">
+                            <strong>Tổng thanh toán:</strong>
+                            <strong>{{ total }} VNĐ</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function selectPayment(method) {
+            document.querySelectorAll('.payment-method').forEach(el => {
+                el.classList.remove('selected');
+            });
+            document.querySelector(`#${method}`).parentElement.classList.add('selected');
+            document.querySelector(`#${method}`).checked = true;
+        }
+    </script>
+</body>
+</html> 

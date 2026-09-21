@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Đánh giá đơn hàng #{{ order.id }}</h2>
+    
+    <form method="post">
+        {% csrf_token %}
+        {% for item in order.orderitem_set.all %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">{{ item.product.name }}</h5>
+                <div class="mb-3">
+                    <label for="rating_{{ item.id }}" class="form-label">Đánh giá:</label>
+                    <select class="form-select" id="rating_{{ item.id }}" name="rating_{{ item.id }}" required>
+                        <option value="">Chọn điểm đánh giá</option>
+                        <option value="1">1 sao</option>
+                        <option value="2">2 sao</option>
+                        <option value="3">3 sao</option>
+                        <option value="4">4 sao</option>
+                        <option value="5">5 sao</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="comment_{{ item.id }}" class="form-label">Nhận xét:</label>
+                    <textarea class="form-control" id="comment_{{ item.id }}" name="comment_{{ item.id }}" rows="3" required></textarea>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        
+        <button type="submit" class="btn btn-primary">Gửi đánh giá</button>
+    </form>
+</div>
+{% endblock %} 

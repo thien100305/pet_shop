@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load order_filters %}
+
+{% block title %}Thông tin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-section {
+        padding: 40px 0;
+    }
+    .profile-card {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .order-card {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .order-status {
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-weight: bold;
+    }
+    .status-pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    .status-shipping {
+        background-color: #cce5ff;
+        color: #004085;
+    }
+    .status-delivered {
+        background-color: #d4edda;
+        color: #155724;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Thông tin cá nhân</h5>
+                    <p class="card-text">
+                        <strong>Tên đăng nhập:</strong> {{ user.username }}<br>
+                        <strong>Email:</strong> {{ user.email }}
+                    </p>
+                    <a href="{% url 'edit_profile' %}" class="btn btn-primary">Chỉnh sửa thông tin</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-9">
+            <h2>Lịch sử đơn hàng</h2>
+            
+            <!-- Đơn hàng chờ xác nhận -->
+            {% if pending_orders %}
+            <div class="card mb-4">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0">Đơn hàng chờ xác nhận</h5>
+                </div>
+                <div class="card-body">
+                    {% for order in pending_orders %}
+                    <div class="order-item mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6>Đơn hàng #{{ order.id }}</h6>
+                            <span class="badge bg-warning">Chờ xác nhận</span>
+                        </div>
+                        <div class="order-details">
+                            <p><strong>Ngày đặt:</strong> {{ order.created_at|date:"d/m/Y H:i" }}</p>
+                            <p><strong>Tổng tiền:</strong> {{ order.total_amount }}  VNĐ</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Đơn hàng đang giao -->
+            {% if shipping_orders %}
+            <div class="card mb-4">
+                <div class="card-header bg-info">
+                    <h5 class="mb-0">Đơn hàng đang giao</h5>
+                </div>
+                <div class="card-body">
+                    {% for order in shipping_orders %}
+                    <div class="order-item mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6>Đơn hàng #{{ order.id }}</h6>
+                            <span class="badge bg-info">Đang giao</span>
+                        </div>
+                        <div class="order-details">
+                            <p><strong>Ngày đặt:</strong> {{ order.created_at|date:"d/m/Y H:i" }}</p>
+                            <p><strong>Tổng tiền:</strong> {{ order.total_amount }}  VNĐ</p>
+                            <p><strong>Dự kiến giao:</strong> {{ order.delivery_date|date:"d/m/Y" }} lúc {{ order.delivery_time|time:"H:i" }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Đơn hàng đã giao -->
+            {% if delivered_orders %}
+            <div class="card mb-4">
+                <div class="card-header bg-success">
+                    <h5 class="mb-0">Đơn hàng đã giao</h5>
+                </div>
+                <div class="card-body">
+                    {% for order in delivered_orders %}
+                    <div class="order-item mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6>Đơn hàng #{{ order.id }}</h6>
+                            <span class="badge bg-success">Đã giao</span>
+                        </div>
+                        <div class="order-details">
+                            <p><strong>Ngày đặt:</strong> {{ order.created_at|date:"d/m/Y H:i" }}</p>
+                            <p><strong>Tổng tiền:</strong> {{ order.total_amount }}  VNĐ</p>
+                            <p><strong>Ngày giao:</strong> {{ order.delivery_date|date:"d/m/Y" }}</p>
+                        </div>
+                        <div class="order-items">
+                            <h6>Sản phẩm:</h6>
+                            <ul class="list-group">
+                                {% for item in order.orderitem_set.all %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    {{ item.product.name }} (x{{ item.quantity }})
+                                    <span class="badge bg-primary rounded-pill">
+                                        {% if item.review %}
+                                            Đã đánh giá
+                                        {% else %}
+                                            <a href="{% url 'product_review' item.product.id %}" class="text-white">Đánh giá</a>
+                                        {% endif %}
+                                    </span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="mt-2">
+                            <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-primary">Xem chi tiết</a>
+                            {% if not order.orderitem_set.all|has_review %}
+                            <a href="{% url 'review_order' order.id %}" class="btn btn-sm btn-success">Đánh giá đơn hàng</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Đơn hàng đã đánh giá -->
+            {% if review_orders %}
+            <div class="card mb-4">
+                <div class="card-header bg-secondary">
+                    <h5 class="mb-0">Đơn hàng đã đánh giá</h5>
+                </div>
+                <div class="card-body">
+                    {% for order in review_orders %}
+                    <div class="order-item mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6>Đơn hàng #{{ order.id }}</h6>
+                            <span class="badge bg-secondary">Đã đánh giá</span>
+                        </div>
+                        <div class="order-details">
+                            <p><strong>Ngày đặt:</strong> {{ order.created_at|date:"d/m/Y H:i" }}</p>
+                            <p><strong>Tổng tiền:</strong> {{ order.total_amount }} VNĐ</p>
+                        </div>
+                        <div class="order-items">
+                            <h6>Sản phẩm:</h6>
+                            <ul class="list-group">
+                                {% for item in order.orderitem_set.all %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    {{ item.product.name }} (x{{ item.quantity }})
+                                    <span class="badge bg-secondary rounded-pill">Đã đánh giá</span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="mt-2">
+                            <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-primary">Xem chi tiết</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

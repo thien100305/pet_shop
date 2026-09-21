@@ -1,0 +1,167 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ product.name }} - PetShop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .nav-main {
+            background-color: #2c6ebb;
+            padding: 15px;
+        }
+        .nav-main .navbar-brand img {
+            height: 40px;
+        }
+        .nav-main .nav-link {
+            color: white !important;
+        }
+        .product-detail {
+            padding: 40px 0;
+        }
+        .product-image {
+            width: 100%;
+            max-height: 500px;
+            object-fit: contain;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        .product-info {
+            padding: 20px;
+        }
+        .product-price {
+            font-size: 24px;
+            font-weight: bold;
+            color: #28a745;
+            margin: 20px 0;
+        }
+        .product-description {
+            margin: 20px 0;
+        }
+        .action-buttons {
+            margin-top: 30px;
+        }
+        .action-buttons .btn {
+            margin-right: 10px;
+            padding: 10px 30px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg nav-main">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <img src="{% static 'images/pic.jpg' %}" alt="Logo">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'home' %}">Trang chủ</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    {% if user.is_authenticated %}
+                        <div class="cart-section me-3">
+                            <a href="{% url 'cart' %}" class="text-white">
+                                <i class="fas fa-shopping-cart"></i>
+                                <span class="badge bg-danger">{{ cart_count }}</span>
+                            </a>
+                        </div>
+                        <a href="{% url 'logout' %}" class="btn btn-outline-light">Đăng xuất</a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-outline-light me-2">Đăng nhập</a>
+                        <a href="{% url 'register' %}" class="btn btn-light">Đăng ký</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Product Detail Section -->
+    <section class="product-detail">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+                </div>
+                <div class="col-md-6">
+                    <div class="product-info">
+                        <h1>{{ product.name }}</h1>
+                        <div class="product-price">{{ product.price }} VNĐ</div>
+                        <div class="product-description">
+                            <h4>Mô tả</h4>
+                            <p>{{ product.description }}</p>
+                        </div>
+                        <div class="action-buttons">
+                            <a href="{% url 'checkout_product' product.id %}" class="btn btn-success">Mua ngay</a>
+                            <form method="post" action="{% url 'add_to_cart' product.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-success">Thêm vào giỏ hàng</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reviews Section -->
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <h2>Đánh giá sản phẩm</h2>
+                {% if user.is_authenticated %}
+                    {% if user_review %}
+                        <div class="alert alert-info">
+                            Bạn đã đánh giá sản phẩm này. 
+                            <a href="{% url 'product_review' product.id %}" class="btn btn-sm btn-primary">Chỉnh sửa đánh giá</a>
+                        </div>
+                    {% else %}
+                        <a href="{% url 'product_review' product.id %}" class="btn btn-primary mb-3">Đánh giá sản phẩm</a>
+                    {% endif %}
+                {% endif %}
+
+                {% if product.reviews.all %}
+                    <div class="reviews-list">
+                        {% for review in product.reviews.all %}
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <h5 class="card-title">{{ review.user.username }}</h5>
+                                        <div class="text-warning">
+                                            {% for i in "12345"|make_list %}
+                                                {% if forloop.counter <= review.rating %}
+                                                    <i class="fas fa-star"></i>
+                                                {% else %}
+                                                    <i class="far fa-star"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    <p class="card-text">{{ review.comment }}</p>
+                                    <small class="text-muted">
+                                        Đánh giá vào: {{ review.created_at|date:"d/m/Y H:i" }}
+                                        {% if review.updated_at != review.created_at %}
+                                            (Cập nhật: {{ review.updated_at|date:"d/m/Y H:i" }})
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">Chưa có đánh giá nào cho sản phẩm này.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

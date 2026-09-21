@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Thông tin cá nhân</h2>
+    <div class="row">
+        <div class="col-md-6">
+            <p><strong>Họ tên:</strong> {{ user.get_full_name }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Số điện thoại:</strong> {{ user.phone }}</p>
+            <p><strong>Địa chỉ:</strong> {{ user.address }}</p>
+        </div>
+    </div>
+
+    <h3 class="mt-4">Đơn hàng của tôi</h3>
+    
+    <!-- Đơn hàng đang chờ xử lý -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Đơn hàng đang chờ xử lý</h4>
+        </div>
+        <div class="card-body">
+            {% for order in pending_orders %}
+            <div class="order-item mb-3">
+                <p><strong>Mã đơn hàng:</strong> #{{ order.id }}</p>
+                <p><strong>Ngày đặt:</strong> {{ order.created_at|date:"d/m/Y H:i" }}</p>
+                <p><strong>Tổng tiền:</strong> {{ order.total_price|floatformat:0 }}đ</p>
+                <p><strong>Trạng thái:</strong> Đang chờ xử lý</p>
+            </div>
+            {% empty %}
+            <p>Không có đơn hàng nào đang chờ xử lý</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Đơn hàng đang giao -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Đơn hàng đang giao</h4>
+        </div>
+        <div class="card-body">
+            {% for order in shipping_orders %}
+            <div class="order-item mb-3">
+                <p><strong>Mã đơn hàng:</strong> #{{ order.id }}</p>
+                <p><strong>Ngày đặt:</strong> {{ order.created_at|date:"d/m/Y H:i" }}</p>
+                <p><strong>Ngày giao dự kiến:</strong> {{ order.delivery_date|date:"d/m/Y" }} lúc {{ order.delivery_time|time:"H:i" }}</p>
+                <p><strong>Tổng tiền:</strong> {{ order.total_price|floatformat:0 }}đ</p>
+                <p><strong>Trạng thái:</strong> Đang giao hàng</p>
+            </div>
+            {% empty %}
+            <p>Không có đơn hàng nào đang giao</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Đơn hàng đã giao -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Đơn hàng đã giao</h4>
+        </div>
+        <div class="card-body">
+            {% for order in delivered_orders %}
+            <div class="order-item mb-3">
+                <p><strong>Mã đơn hàng:</strong> #{{ order.id }}</p>
+                <p><strong>Ngày đặt:</strong> {{ order.created_at|date:"d/m/Y H:i" }}</p>
+                <p><strong>Ngày giao:</strong> {{ order.delivery_date|date:"d/m/Y" }} lúc {{ order.delivery_time|time:"H:i" }}</p>
+                <p><strong>Tổng tiền:</strong> {{ order.total_price|floatformat:0 }}đ</p>
+                <p><strong>Trạng thái:</strong> Đã giao hàng</p>
+                <a href="{% url 'confirm_received' order.id %}" class="btn btn-primary">Xác nhận đã nhận hàng</a>
+            </div>
+            {% empty %}
+            <p>Không có đơn hàng nào đã giao</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Đơn hàng đã đánh giá -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Đơn hàng đã đánh giá</h4>
+        </div>
+        <div class="card-body">
+            {% for order in review_orders %}
+            <div class="order-item mb-3">
+                <p><strong>Mã đơn hàng:</strong> #{{ order.id }}</p>
+                <p><strong>Ngày đặt:</strong> {{ order.created_at|date:"d/m/Y H:i" }}</p>
+                <p><strong>Ngày giao:</strong> {{ order.delivery_date|date:"d/m/Y" }} lúc {{ order.delivery_time|time:"H:i" }}</p>
+                <p><strong>Tổng tiền:</strong> {{ order.total_price|floatformat:0 }}đ</p>
+                <p><strong>Trạng thái:</strong> Đã đánh giá</p>
+                <div class="reviews">
+                    {% for item in order.orderitem_set.all %}
+                    <div class="review-item">
+                        <p><strong>Sản phẩm:</strong> {{ item.product.name }}</p>
+                        {% if item.review %}
+                        <p><strong>Đánh giá:</strong> {{ item.review.rating }}/5</p>
+                        <p><strong>Nội dung:</strong> {{ item.review.comment }}</p>
+                        {% else %}
+                        <a href="{% url 'review_order' order.id %}" class="btn btn-primary">Đánh giá sản phẩm</a>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% empty %}
+            <p>Không có đơn hàng nào đã đánh giá</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

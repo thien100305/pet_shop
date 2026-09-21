@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Thanh toán</h2>
+    
+    <!-- Hiển thị thông tin sản phẩm -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Sản phẩm đã chọn</h5>
+                </div>
+                <div class="card-body">
+                    {% for item in cart_items %}
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h6 class="mb-0">{{ item.product.name }}</h6>
+                            <small class="text-muted">Số lượng: {{ item.quantity }}</small>
+                        </div>
+                        <div class="text-end">
+                            <div>{{ item.total_price|floatformat:0 }}đ</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between">
+                        <h5>Tổng tiền:</h5>
+                        <h5>{{ total|floatformat:0 }}đ</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Form thông tin thanh toán -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Thông tin thanh toán</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'place_order' %}">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="full_name" class="form-label">Họ tên</label>
+                            <input type="text" class="form-control" id="full_name" name="full_name" value="{{ user.get_full_name }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Số điện thoại</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" value="{{ user_profile.phone }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Địa chỉ giao hàng</label>
+                            <textarea class="form-control" id="address" name="address" rows="3" required>{{ user_profile.address }}</textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="payment_method" class="form-label">Phương thức thanh toán</label>
+                            <select class="form-select" id="payment_method" name="payment_method" required>
+                                <option value="cod">Thanh toán khi nhận hàng (COD)</option>
+                                <option value="bank">Chuyển khoản ngân hàng</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100">Đặt hàng</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

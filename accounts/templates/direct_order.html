@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Đặt hàng</h2>
+    
+    <div class="row">
+        <!-- Thông tin sản phẩm -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <p class="card-text">{{ product.description }}</p>
+                    <p class="card-text"><strong>Giá:</strong> {{ product.price|floatformat:0 }}đ</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Form đặt hàng -->
+        <div class="col-md-8">
+            <form method="post" action="{% url 'place_order' %}">
+                {% csrf_token %}
+                <input type="hidden" name="product_id" value="{{ product.id }}">
+                
+                <div class="mb-3">
+                    <label for="quantity" class="form-label">Số lượng</label>
+                    <input type="number" class="form-control" id="quantity" name="quantity" value="1" min="1" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="full_name" class="form-label">Họ tên</label>
+                    <input type="text" class="form-control" id="full_name" name="full_name" value="{{ user.get_full_name }}" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="phone" class="form-label">Số điện thoại</label>
+                    <input type="tel" class="form-control" id="phone" name="phone" value="{{ user.userprofile.phone }}" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="address" class="form-label">Địa chỉ giao hàng</label>
+                    <textarea class="form-control" id="address" name="address" rows="3" required>{{ user.userprofile.address }}</textarea>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="payment_method" class="form-label">Phương thức thanh toán</label>
+                    <select class="form-select" id="payment_method" name="payment_method" required>
+                        <option value="cod">Thanh toán khi nhận hàng (COD)</option>
+                        <option value="bank">Chuyển khoản ngân hàng</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Đặt hàng</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 
