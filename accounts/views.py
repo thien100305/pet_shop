@@ -19,6 +19,8 @@ def login_view(request):
         if user is not None:
             login(request, user)
             messages.success(request, 'Đăng nhập thành công!')
+            if user.is_staff:
+                return redirect('admin_dashboard')
             return redirect('home')  # Chuyển hướng về trang chủ sau khi đăng nhập
         else:
             messages.error(request, 'Tên đăng nhập hoặc mật khẩu không đúng!')

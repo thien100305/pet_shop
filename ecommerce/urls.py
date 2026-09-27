@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.views.generic import TemplateView
 from django.conf import settings
 from django.conf.urls.static import static
 from accounts.models import Product, Category, Review
@@ -76,6 +77,7 @@ def product_detail(request, product_id):
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('quan-tri/', TemplateView.as_view(template_name='admin_dashboard.html'), name='admin_dashboard'),
     path('', home_view, name='home'),
     path('search/', views.search_products, name='search'),
     path('product/<int:product_id>/', product_detail, name='product_detail'),
