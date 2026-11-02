@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}{% block admin_title %}Quản trị{% endblock %} | PetHouse{% endblock %}
+{% block extra_css %}
+<style>
+  .admin-shell{display:grid;grid-template-columns:230px minmax(0,1fr);gap:1.5rem;align-items:start}
+  .admin-sidebar{background:#13213c;color:white;border-radius:18px;padding:1rem;position:sticky;top:94px}
+  .admin-sidebar h2{font-size:1rem;margin:.25rem .6rem 1rem;color:#93c5fd}
+  .admin-sidebar a{display:flex;align-items:center;gap:.7rem;color:#dbe6ff;text-decoration:none;padding:.8rem;border-radius:10px;font-weight:650}
+  .admin-sidebar a:hover{background:#22375e;color:white}
+  .admin-main{min-width:0}.admin-thumb{width:58px;height:58px;border-radius:10px;object-fit:cover;background:#f1f5f9}
+  .admin-form{max-width:760px}.admin-form input[type=file]{width:100%;padding:.7rem;border:1px solid #cbd5e1;border-radius:11px}
+  .checkbox-row label{display:flex;align-items:center;gap:.6rem}.checkbox-row input{width:auto}
+  @media(max-width:800px){.admin-shell{grid-template-columns:1fr}.admin-sidebar{position:static;display:flex;overflow:auto}.admin-sidebar h2{display:none}.admin-sidebar a{white-space:nowrap}}
+</style>
+{% endblock %}
+{% block content %}
+<section class="section"><div class="container admin-shell">
+  <aside class="admin-sidebar">
+    <h2>QUẢN TRỊ PETHOUSE</h2>
+    <a href="{% url 'admin_dashboard' %}"><i class="fa-solid fa-chart-line"></i> Tổng quan</a>
+    <a href="{% url 'admin_products' %}"><i class="fa-solid fa-box-open"></i> Sản phẩm</a>
+    <a href="{% url 'admin_categories' %}"><i class="fa-solid fa-tags"></i> Danh mục</a>
+    <a href="{% url 'home' %}"><i class="fa-solid fa-store"></i> Xem cửa hàng</a>
+  </aside>
+  <div class="admin-main">{% block admin_content %}{% endblock %}</div>
+</div></section>
+{% endblock %}

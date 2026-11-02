@@ -1,0 +1,11 @@
+{% extends 'admin/base.html' %}
+{% block admin_title %}{{ page_title }}{% endblock %}
+{% block admin_content %}
+<div class="section-heading"><div><span class="eyebrow">Sản phẩm</span><h1>{{ page_title }}</h1></div><a class="btn btn-outline" href="{% url 'admin_products' %}"><i class="fa-solid fa-arrow-left"></i> Quay lại</a></div>
+<form class="panel admin-form" method="post" enctype="multipart/form-data">{% csrf_token %}
+  {{ form.non_field_errors }}
+  {% for field in form %}<div class="form-group {% if field.name == 'is_active' %}checkbox-row{% endif %}"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{{ field.errors }}{% if field.help_text %}<div class="helptext">{{ field.help_text }}</div>{% endif %}</div>{% endfor %}
+  {% if product and product.image %}<p class="muted">Ảnh hiện tại:</p><img class="admin-thumb" src="{{ product.image.url }}" alt="{{ product.name }}">{% endif %}
+  <div class="actions mt-2"><button class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Lưu sản phẩm</button><a class="btn btn-outline" href="{% url 'admin_products' %}">Hủy</a></div>
+</form>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends 'admin/base.html' %}
+{% block admin_title %}Quản lý danh mục{% endblock %}
+{% block admin_content %}
+<div class="section-heading"><div><span class="eyebrow">Phân loại</span><h1>Quản lý danh mục</h1></div><a class="btn btn-primary" href="{% url 'admin_category_create' %}"><i class="fa-solid fa-plus"></i> Thêm danh mục</a></div>
+<div class="panel"><div class="table-wrap"><table class="table"><thead><tr><th>Tên danh mục</th><th>Mô tả</th><th>Số sản phẩm</th><th>Thao tác</th></tr></thead><tbody>
+{% for category in categories %}<tr><td><strong>{{ category.name }}</strong></td><td>{{ category.description|truncatechars:70 }}</td><td>{{ category.product_count }}</td><td><div class="actions"><a class="btn btn-outline btn-sm" href="{% url 'admin_category_edit' category.id %}"><i class="fa-solid fa-pen"></i> Sửa</a><form method="post" action="{% url 'admin_category_delete' category.id %}" onsubmit="return confirm('Xóa danh mục này?')">{% csrf_token %}<button class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i> Xóa</button></form></div></td></tr>
+{% empty %}<tr><td colspan="4">Chưa có danh mục.</td></tr>{% endfor %}
+</tbody></table></div></div>
+{% endblock %}

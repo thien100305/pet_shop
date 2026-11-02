@@ -1,99 +1,48 @@
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}PetShop{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    {% block extra_css %}{% endblock %}
-    <style>
-        footer.custom-footer {
-            background-color: #31cb4d;
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="PetHouse - cửa hàng thú cưng và phụ kiện uy tín">
+  <title>{% block title %}PetHouse{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="{% static 'css/store.css' %}">
+  {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'home' %}">
-                <img src="{% static 'images/pic.jpg' %}" alt="Logo" height="40">
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'home' %}">Trang chủ</a>
-                    </li>
-                </ul>
-                <div class="d-flex align-items-center">
-                    {% if user.is_authenticated %}
-                        <div class="cart-section me-3">
-                            <a href="{% url 'cart' %}" class="text-white">
-                                <i class="fas fa-shopping-cart"></i>
-                                <span class="badge bg-danger">{{ cart_count }}</span>
-                            </a>
-                        </div>
-                        <a href="{% url 'profile' %}" class="btn btn-outline-light me-2">Thông tin cá nhân</a>
-                        <a href="{% url 'logout' %}" class="btn btn-outline-light">Đăng xuất</a>
-                    {% else %}
-                        <a href="{% url 'login' %}" class="btn btn-outline-light me-2">Đăng nhập</a>
-                        <a href="{% url 'register' %}" class="btn btn-light">Đăng ký</a>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main class="container my-4">
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            {% endfor %}
+  <div class="topbar"><div class="container topbar-inner"><span><i class="fa-solid fa-truck-fast"></i> Miễn phí tư vấn chăm sóc thú cưng</span><span>Hotline: 0398 448 438</span></div></div>
+  <header class="site-nav">
+    <div class="container nav-inner">
+      <a class="brand" href="{% url 'home' %}"><img class="brand-mark" src="{% static 'images/pic.jpg' %}" alt="PetHouse"><span>PetHouse</span></a>
+      <nav class="nav-links" aria-label="Điều hướng chính">
+        <a class="nav-link" href="{% url 'home' %}">Trang chủ</a>
+        {% if user.is_authenticated %}<a class="nav-link" href="{% url 'profile' %}">Đơn hàng</a>{% endif %}
+        {% if user.is_staff %}<a class="nav-link" href="{% url 'admin_dashboard' %}">Quản trị</a>{% endif %}
+      </nav>
+      <form class="search-form" action="{% url 'search' %}" method="get" role="search">
+        <input name="q" value="{{ request.GET.q }}" placeholder="Tìm sản phẩm..." aria-label="Tìm sản phẩm">
+        <button aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button>
+      </form>
+      <div class="nav-actions">
+        {% if user.is_authenticated %}
+          <a class="btn icon-btn" href="{% url 'cart' %}" aria-label="Giỏ hàng"><i class="fa-solid fa-bag-shopping"></i><span class="cart-badge">{{ cart_count|default:0 }}</span></a>
+          <a class="btn btn-outline account-link" href="{% url 'profile' %}"><i class="fa-regular fa-user"></i> {{ user.username }}</a>
+          <form action="{% url 'logout' %}" method="post">{% csrf_token %}<button class="btn btn-outline" aria-label="Đăng xuất"><i class="fa-solid fa-arrow-right-from-bracket"></i></button></form>
+        {% else %}
+          <a class="btn btn-outline" href="{% url 'login' %}">Đăng nhập</a><a class="btn btn-primary account-link" href="{% url 'register' %}">Đăng ký</a>
         {% endif %}
-
-        {% block content %}
-        {% endblock %}
-    </main>
-
-    <!-- Footer -->
-    <footer class="custom-footer text-light py-4 mt-5">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4">
-                    <h5>Về chúng tôi</h5>
-                    <p>Chúng tôi sẽ ghi nhận tất cả những đánh giá của quý khách!</p>
-                </div>
-                <div class="col-md-4">
-                    <h5>Liên kết</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="{% url 'home' %}" class="text-light">Trang chủ</a></li>
-                        <li><a href="#" class="text-light">Thú cưng</a></li>
-                        <li><a href="#" class="text-light">Về chúng tôi</a></li>
-                        <li><a href="#" class="text-light">Tương tác</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-4">
-                    <h5>Liên hệ</h5>
-                    <ul class="list-unstyled">
-                        <li><i class="fas fa-phone"></i> 0398448438</li>
-                        <li><i class="fas fa-envelope"></i> thien100305@gmail.com</li>
-                        <li><i class="fas fa-map-marker-alt"></i> 472 Núi Thành, Hòa Cường Nam, Đà Nẵng</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    {% block extra_js %}{% endblock %}
+      </div>
+    </div>
+  </header>
+  <main class="site-main">
+    {% if messages %}<div class="container messages">{% for message in messages %}<div class="alert alert-{{ message.tags }}">{{ message }}</div>{% endfor %}</div>{% endif %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="footer"><div class="container"><div class="footer-grid"><div><a class="brand" href="{% url 'home' %}" style="color:white"><img class="brand-mark" src="{% static 'images/pic.jpg' %}" alt="">PetHouse</a><p>Đồng hành cùng bạn trong hành trình chăm sóc những người bạn nhỏ bằng sản phẩm chất lượng và dịch vụ tận tâm.</p></div><div><h3>Khám phá</h3><p><a href="{% url 'home' %}">Sản phẩm</a></p><p><a href="{% url 'cart' %}">Giỏ hàng</a></p><p><a href="{% url 'profile' %}">Tài khoản</a></p></div><div><h3>Liên hệ</h3><p><i class="fa-solid fa-location-dot"></i> 472 Núi Thành, Đà Nẵng</p><p><i class="fa-solid fa-phone"></i> 0398 448 438</p><p><i class="fa-solid fa-envelope"></i> thien100305@gmail.com</p></div></div><div class="footer-bottom">© {% now "Y" %} PetHouse. All rights reserved.</div></div></footer>
+  {% block extra_js %}{% endblock %}
 </body>
 </html>

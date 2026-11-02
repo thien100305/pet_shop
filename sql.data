@@ -1,0 +1,55 @@
+/*
+ PetHouse - SQL Server schema
+ Run this entire file in SQL Server Management Studio while connected as a
+ login that can create databases. The script is idempotent for PetHouseDB.
+ Change PetHouseDB below if you also change DB_NAME in .env.
+*/
+IF DB_ID(N'PetHouseDB') IS NULL CREATE DATABASE [PetHouseDB];
+GO
+USE [PetHouseDB];
+GO
+
+IF OBJECT_ID(N'dbo.django_migrations', N'U') IS NULL
+BEGIN
+CREATE TABLE dbo.django_migrations(id BIGINT IDENTITY(1,1) PRIMARY KEY, app NVARCHAR(255) NOT NULL, name NVARCHAR(255) NOT NULL, applied DATETIMEOFFSET(7) NOT NULL);
+CREATE TABLE dbo.django_content_type(id INT IDENTITY(1,1) PRIMARY KEY, app_label NVARCHAR(100) NOT NULL, model NVARCHAR(100) NOT NULL, CONSTRAINT uq_content_type UNIQUE(app_label,model));
+CREATE TABLE dbo.auth_permission(id INT IDENTITY(1,1) PRIMARY KEY, name NVARCHAR(255) NOT NULL, content_type_id INT NOT NULL, codename NVARCHAR(100) NOT NULL, CONSTRAINT uq_permission UNIQUE(content_type_id,codename), CONSTRAINT fk_permission_content FOREIGN KEY(content_type_id) REFERENCES dbo.django_content_type(id));
+CREATE TABLE dbo.auth_group(id INT IDENTITY(1,1) PRIMARY KEY, name NVARCHAR(150) NOT NULL UNIQUE);
+CREATE TABLE dbo.auth_user(id INT IDENTITY(1,1) PRIMARY KEY, password NVARCHAR(128) NOT NULL, last_login DATETIMEOFFSET(7) NULL, is_superuser BIT NOT NULL DEFAULT 0, username NVARCHAR(150) NOT NULL UNIQUE, first_name NVARCHAR(150) NOT NULL DEFAULT N'', last_name NVARCHAR(150) NOT NULL DEFAULT N'', email NVARCHAR(254) NOT NULL DEFAULT N'', is_staff BIT NOT NULL DEFAULT 0, is_active BIT NOT NULL DEFAULT 1, date_joined DATETIMEOFFSET(7) NOT NULL DEFAULT SYSDATETIMEOFFSET());
+CREATE TABLE dbo.auth_group_permissions(id INT IDENTITY(1,1) PRIMARY KEY, group_id INT NOT NULL, permission_id INT NOT NULL, CONSTRAINT uq_group_permission UNIQUE(group_id,permission_id), CONSTRAINT fk_gp_group FOREIGN KEY(group_id) REFERENCES dbo.auth_group(id) ON DELETE CASCADE, CONSTRAINT fk_gp_permission FOREIGN KEY(permission_id) REFERENCES dbo.auth_permission(id) ON DELETE CASCADE);
+CREATE TABLE dbo.auth_user_groups(id INT IDENTITY(1,1) PRIMARY KEY, user_id INT NOT NULL, group_id INT NOT NULL, CONSTRAINT uq_user_group UNIQUE(user_id,group_id), CONSTRAINT fk_ug_user FOREIGN KEY(user_id) REFERENCES dbo.auth_user(id) ON DELETE CASCADE, CONSTRAINT fk_ug_group FOREIGN KEY(group_id) REFERENCES dbo.auth_group(id) ON DELETE CASCADE);
+CREATE TABLE dbo.auth_user_user_permissions(id INT IDENTITY(1,1) PRIMARY KEY, user_id INT NOT NULL, permission_id INT NOT NULL, CONSTRAINT uq_user_permission UNIQUE(user_id,permission_id), CONSTRAINT fk_up_user FOREIGN KEY(user_id) REFERENCES dbo.auth_user(id) ON DELETE CASCADE, CONSTRAINT fk_up_permission FOREIGN KEY(permission_id) REFERENCES dbo.auth_permission(id) ON DELETE CASCADE);
+CREATE TABLE dbo.django_session(session_key NVARCHAR(40) PRIMARY KEY, session_data NVARCHAR(MAX) NOT NULL, expire_date DATETIMEOFFSET(7) NOT NULL);
+CREATE INDEX ix_session_expire ON dbo.django_session(expire_date);
+
+CREATE TABLE dbo.accounts_category(id BIGINT IDENTITY(1,1) PRIMARY KEY, name NVARCHAR(100) NOT NULL UNIQUE, description NVARCHAR(MAX) NOT NULL DEFAULT N'', created_at DATETIMEOFFSET(7) NOT NULL DEFAULT SYSDATETIMEOFFSET(), updated_at DATETIMEOFFSET(7) NOT NULL DEFAULT SYSDATETIMEOFFSET());
+CREATE TABLE dbo.accounts_product(id BIGINT IDENTITY(1,1) PRIMARY KEY, name NVARCHAR(200) NOT NULL, description NVARCHAR(MAX) NOT NULL, price DECIMAL(12,0) NOT NULL, image NVARCHAR(100) NOT NULL, created_at DATETIMEOFFSET(7) NOT NULL DEFAULT SYSDATETIMEOFFSET(), updated_at DATETIMEOFFSET(7) NOT NULL DEFAULT SYSDATETIMEOFFSET(), is_active BIT NOT NULL DEFAULT 1, category_id BIGINT NOT NULL, CONSTRAINT ck_product_price CHECK(price>=0), CONSTRAINT fk_product_category FOREIGN KEY(category_id) REFERENCES dbo.accounts_category(id));
+CREATE INDEX ix_product_category ON dbo.accounts_product(category_id);
+CREATE TABLE dbo.accounts_cart(id BIGINT IDENTITY(1,1) PRIMARY KEY, created_at DATETIMEOFFSET(7) NOT NULL DEFAULT SYSDATETIMEOFFSET(), updated_at DATETIMEOFFSET(7) NOT NULL DEFAULT SYSDATETIMEOFFSET(), user_id INT NOT NULL UNIQUE, CONSTRAINT fk_cart_user FOREIGN KEY(user_id) REFERENCES dbo.auth_user(id) ON DELETE CASCADE);
+CREATE TABLE dbo.accounts_cartitem(id BIGINT IDENTITY(1,1) PRIMARY KEY, quantity INT NOT NULL DEFAULT 1, created_at DATETIMEOFFSET(7) NOT NULL DEFAULT SYSDATETIMEOFFSET(), updated_at DATETIMEOFFSET(7) NOT NULL DEFAULT SYSDATETIMEOFFSET(), cart_id BIGINT NOT NULL, product_id BIGINT NOT NULL, CONSTRAINT ck_cart_quantity CHECK(quantity BETWEEN 1 AND 99), CONSTRAINT uq_cart_product UNIQUE(cart_id,product_id), CONSTRAINT fk_cartitem_cart FOREIGN KEY(cart_id) REFERENCES dbo.accounts_cart(id) ON DELETE CASCADE, CONSTRAINT fk_cartitem_product FOREIGN KEY(product_id) REFERENCES dbo.accounts_product(id) ON DELETE CASCADE);
+CREATE INDEX ix_cartitem_product ON dbo.accounts_cartitem(product_id);
+CREATE TABLE dbo.accounts_order(id BIGINT IDENTITY(1,1) PRIMARY KEY, full_name NVARCHAR(100) NOT NULL, email NVARCHAR(254) NOT NULL, phone NVARCHAR(20) NOT NULL, address NVARCHAR(MAX) NOT NULL, payment_method NVARCHAR(10) NOT NULL, total_amount DECIMAL(12,0) NOT NULL, created_at DATETIMEOFFSET(7) NOT NULL DEFAULT SYSDATETIMEOFFSET(), updated_at DATETIMEOFFSET(7) NOT NULL DEFAULT SYSDATETIMEOFFSET(), user_id INT NOT NULL, status NVARCHAR(20) NOT NULL DEFAULT N'pending', delivery_date DATE NULL, delivery_time TIME(7) NULL, is_auto_delivered BIT NOT NULL DEFAULT 0, CONSTRAINT ck_order_payment CHECK(payment_method IN(N'cod',N'bank')), CONSTRAINT ck_order_status CHECK(status IN(N'pending',N'confirmed',N'preparing',N'shipping',N'delivered',N'review',N'cancelled')), CONSTRAINT ck_order_total CHECK(total_amount>=0), CONSTRAINT fk_order_user FOREIGN KEY(user_id) REFERENCES dbo.auth_user(id));
+CREATE INDEX ix_order_user ON dbo.accounts_order(user_id);
+CREATE TABLE dbo.accounts_orderitem(id BIGINT IDENTITY(1,1) PRIMARY KEY, quantity INT NOT NULL, price DECIMAL(12,0) NOT NULL, created_at DATETIMEOFFSET(7) NOT NULL DEFAULT SYSDATETIMEOFFSET(), updated_at DATETIMEOFFSET(7) NOT NULL DEFAULT SYSDATETIMEOFFSET(), order_id BIGINT NOT NULL, product_id BIGINT NOT NULL, CONSTRAINT ck_orderitem_quantity CHECK(quantity>=1), CONSTRAINT ck_orderitem_price CHECK(price>=0), CONSTRAINT fk_orderitem_order FOREIGN KEY(order_id) REFERENCES dbo.accounts_order(id) ON DELETE CASCADE, CONSTRAINT fk_orderitem_product FOREIGN KEY(product_id) REFERENCES dbo.accounts_product(id));
+CREATE INDEX ix_orderitem_order ON dbo.accounts_orderitem(order_id); CREATE INDEX ix_orderitem_product ON dbo.accounts_orderitem(product_id);
+CREATE TABLE dbo.accounts_userprofile(id BIGINT IDENTITY(1,1) PRIMARY KEY, phone NVARCHAR(20) NOT NULL DEFAULT N'', address NVARCHAR(MAX) NOT NULL DEFAULT N'', city NVARCHAR(100) NOT NULL DEFAULT N'', country NVARCHAR(100) NOT NULL DEFAULT N'Việt Nam', postal_code NVARCHAR(20) NOT NULL DEFAULT N'', created_at DATETIMEOFFSET(7) NOT NULL DEFAULT SYSDATETIMEOFFSET(), updated_at DATETIMEOFFSET(7) NOT NULL DEFAULT SYSDATETIMEOFFSET(), user_id INT NOT NULL UNIQUE, CONSTRAINT fk_profile_user FOREIGN KEY(user_id) REFERENCES dbo.auth_user(id) ON DELETE CASCADE);
+CREATE TABLE dbo.accounts_review(id BIGINT IDENTITY(1,1) PRIMARY KEY, rating INT NOT NULL, comment NVARCHAR(MAX) NOT NULL, created_at DATETIMEOFFSET(7) NOT NULL DEFAULT SYSDATETIMEOFFSET(), updated_at DATETIMEOFFSET(7) NOT NULL DEFAULT SYSDATETIMEOFFSET(), order_id BIGINT NULL, product_id BIGINT NULL, user_id INT NOT NULL, CONSTRAINT ck_review_rating CHECK(rating BETWEEN 1 AND 5), CONSTRAINT uq_review_user_product UNIQUE(user_id,product_id), CONSTRAINT fk_review_order FOREIGN KEY(order_id) REFERENCES dbo.accounts_order(id) ON DELETE CASCADE, CONSTRAINT fk_review_product FOREIGN KEY(product_id) REFERENCES dbo.accounts_product(id) ON DELETE CASCADE, CONSTRAINT fk_review_user FOREIGN KEY(user_id) REFERENCES dbo.auth_user(id) ON DELETE CASCADE);
+CREATE INDEX ix_review_order ON dbo.accounts_review(order_id); CREATE INDEX ix_review_product ON dbo.accounts_review(product_id);
+CREATE TABLE dbo.django_admin_log(id INT IDENTITY(1,1) PRIMARY KEY, action_time DATETIMEOFFSET(7) NOT NULL, object_id NVARCHAR(MAX) NULL, object_repr NVARCHAR(200) NOT NULL, action_flag SMALLINT NOT NULL, change_message NVARCHAR(MAX) NOT NULL, content_type_id INT NULL, user_id INT NOT NULL, CONSTRAINT fk_log_content FOREIGN KEY(content_type_id) REFERENCES dbo.django_content_type(id), CONSTRAINT fk_log_user FOREIGN KEY(user_id) REFERENCES dbo.auth_user(id) ON DELETE CASCADE);
+
+DECLARE @now DATETIMEOFFSET(7)=SYSDATETIMEOFFSET();
+INSERT dbo.django_migrations(app,name,applied) VALUES
+(N'contenttypes',N'0001_initial',@now),(N'contenttypes',N'0002_remove_content_type_name',@now),
+(N'auth',N'0001_initial',@now),(N'auth',N'0002_alter_permission_name_max_length',@now),(N'auth',N'0003_alter_user_email_max_length',@now),(N'auth',N'0004_alter_user_username_opts',@now),(N'auth',N'0005_alter_user_last_login_null',@now),(N'auth',N'0006_require_contenttypes_0002',@now),(N'auth',N'0007_alter_validators_add_error_messages',@now),(N'auth',N'0008_alter_user_username_max_length',@now),(N'auth',N'0009_alter_user_last_name_max_length',@now),(N'auth',N'0010_alter_group_name_max_length',@now),(N'auth',N'0011_update_proxy_permissions',@now),(N'auth',N'0012_alter_user_first_name_max_length',@now),
+(N'accounts',N'0001_initial',@now),(N'accounts',N'0002_cart_cartitem_order_orderitem',@now),(N'accounts',N'0003_userprofile',@now),(N'accounts',N'0004_order_status',@now),(N'accounts',N'0005_order_delivery_date_order_delivery_time_review',@now),(N'accounts',N'0006_order_is_auto_delivered',@now),(N'accounts',N'0007_review_product_review_updated_at',@now),(N'accounts',N'0008_alter_order_status_alter_review_order',@now),(N'accounts',N'0009_alter_category_options_alter_order_options_and_more',@now),
+(N'admin',N'0001_initial',@now),(N'admin',N'0002_logentry_remove_auto_add',@now),(N'admin',N'0003_logentry_add_action_flag_choices',@now),(N'sessions',N'0001_initial',@now);
+
+INSERT dbo.accounts_category(name,description) VALUES
+(N'Chó cảnh',N'Những người bạn trung thành và năng động'),
+(N'Mèo cảnh',N'Những người bạn nhỏ đáng yêu'),
+(N'Phụ kiện',N'Phụ kiện chăm sóc thú cưng'),
+(N'Thức ăn',N'Dinh dưỡng phù hợp cho thú cưng');
+END
+GO
+PRINT N'PetHouseDB đã sẵn sàng. Cấu hình file .env rồi chạy: python manage.py createsuperuser';
+GO

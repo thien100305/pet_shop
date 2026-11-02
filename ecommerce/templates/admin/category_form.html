@@ -1,0 +1,10 @@
+{% extends 'admin/base.html' %}
+{% block admin_title %}{{ page_title }}{% endblock %}
+{% block admin_content %}
+<div class="section-heading"><div><span class="eyebrow">Danh mục</span><h1>{{ page_title }}</h1></div><a class="btn btn-outline" href="{% url 'admin_categories' %}"><i class="fa-solid fa-arrow-left"></i> Quay lại</a></div>
+<form class="panel admin-form" method="post">{% csrf_token %}
+  {{ form.non_field_errors }}
+  {% for field in form %}<div class="form-group"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{{ field.errors }}</div>{% endfor %}
+  <div class="actions mt-2"><button class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Lưu danh mục</button><a class="btn btn-outline" href="{% url 'admin_categories' %}">Hủy</a></div>
+</form>
+{% endblock %}
