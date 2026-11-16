@@ -10,6 +10,7 @@ urlpatterns = [
     path("api/admin/", include("accounts.api_urls")),
     path("api-auth/", include("rest_framework.urls")),
     path("quan-tri/", views.admin_dashboard, name="admin_dashboard"),
+    path("quan-tri/nguoi-dung/", views.admin_users, name="admin_users"),
     path("quan-tri/don-hang/<int:order_id>/", views.admin_update_order, name="admin_update_order"),
     path("quan-tri/san-pham/", views.admin_products, name="admin_products"),
     path("quan-tri/san-pham/them/", views.admin_product_create, name="admin_product_create"),

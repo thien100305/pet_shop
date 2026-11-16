@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from django.contrib import messages
+from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
@@ -387,6 +388,23 @@ def admin_products(request):
     if query:
         products = products.filter(Q(name__icontains=query) | Q(category__name__icontains=query))
     return render(request, "admin/products.html", {"products": products, "query": query})
+
+
+@staff_required
+def admin_users(request):
+    query = request.GET.get("q", "").strip()
+    users = User.objects.annotate(order_count=Count("orders")).order_by("-date_joined")
+    if query:
+        users = users.filter(
+            Q(username__icontains=query)
+            | Q(first_name__icontains=query)
+            | Q(last_name__icontains=query)
+            | Q(email__icontains=query)
+        )
+    return render(request, "admin/users.html", {
+        "users": Paginator(users, 20).get_page(request.GET.get("page")),
+        "query": query,
+    })
 
 
 @staff_required
