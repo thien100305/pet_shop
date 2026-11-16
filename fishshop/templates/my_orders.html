@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Đơn mua của tôi | FishShop{% endblock %}
+{% block content %}
+<section class="section"><div class="container">
+  <div class="section-heading"><div><span class="eyebrow">Trung tâm đơn hàng</span><h1>Đơn mua của tôi</h1><p>Theo dõi trạng thái giao hàng và quản lý các đơn đã đặt.</p></div></div>
+  <div class="order-tabs">
+    {% for tab in tabs %}<a class="order-tab {% if selected_status == tab.value %}active{% endif %}" href="?{% if tab.value %}status={{ tab.value }}{% endif %}">{{ tab.label }} <span>{{ tab.count }}</span></a>{% endfor %}
+  </div>
+  <form class="order-search panel" method="get">
+    {% if selected_status %}<input type="hidden" name="status" value="{{ selected_status }}">{% endif %}
+    <input type="text" name="q" value="{{ query }}" placeholder="Tìm theo mã đơn, mã vận đơn hoặc tên sản phẩm...">
+    <button class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Tìm đơn</button>
+  </form>
+  <div class="order-list">
+    {% for order in orders %}<article class="customer-order panel">
+      <div class="customer-order-head"><div><strong>Đơn hàng #{{ order.id }}</strong><span class="muted"> · {{ order.created_at|date:'H:i d/m/Y' }}</span></div><span class="status status-{{ order.status }}">{{ order.get_status_display }}</span></div>
+      {% for item in order.items.all %}<div class="customer-order-item"><img src="{{ item.product.image_src }}" alt="{{ item.product.name }}"><div><strong>{{ item.product.name }}</strong><p class="muted">x{{ item.quantity }} · {{ item.price|floatformat:0 }} đ</p></div><strong>{{ item.total_price|floatformat:0 }} đ</strong></div>{% endfor %}
+      <div class="customer-order-foot"><div>{% if order.tracking_number %}<span class="muted">Mã vận đơn: </span><strong>{{ order.tracking_number }}</strong>{% endif %}</div><div class="order-total">Thành tiền: <strong>{{ order.total_amount|floatformat:0 }} đ</strong></div><div class="actions"><a class="btn btn-primary btn-sm" href="{% url 'order_detail' order.id %}"><i class="fa-solid fa-location-dot"></i> Theo dõi</a>{% if order.status == 'pending' %}<form method="post" action="{% url 'cancel_order' order.id %}" onsubmit="return confirm('Bạn chắc chắn muốn hủy đơn này?')">{% csrf_token %}<button class="btn btn-danger btn-sm">Hủy đơn</button></form>{% endif %}<form method="post" action="{% url 'reorder' order.id %}">{% csrf_token %}<button class="btn btn-outline btn-sm">Mua lại</button></form></div></div>
+    </article>{% empty %}<div class="empty-state panel"><i class="fa-solid fa-box-open fa-2x"></i><h3>Không có đơn hàng phù hợp</h3><p>Hãy khám phá các loài cá tại FishShop.</p><a class="btn btn-primary" href="{% url 'home' %}">Mua sắm ngay</a></div>{% endfor %}
+  </div>
+  {% include 'partials/pagination.html' with page_obj=orders %}
+</div></section>
+{% endblock %}

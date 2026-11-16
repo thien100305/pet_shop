@@ -77,6 +77,6 @@ class CartItemAdmin(admin.ModelAdmin):
     list_display = ("cart", "product", "quantity", "total_price")
 
 
-admin.site.site_header = "Quản trị PetHouse"
-admin.site.site_title = "PetHouse Admin"
-admin.site.index_title = "Quản lý cửa hàng"
+admin.site.site_header = "Quản trị FishShop"
+admin.site.site_title = "FishShop Admin"
+admin.site.index_title = "Quản lý cửa hàng cá cảnh"

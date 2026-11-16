@@ -1,7 +1,8 @@
+from urllib.parse import parse_qs, urlparse
+
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-
 from .models import Category, Order, Product, UserProfile
 
 
@@ -22,16 +23,52 @@ class RegisterForm(UserCreationForm):
 class AdminProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ("name", "description", "price", "image", "category", "is_active")
+        fields = ("name", "description", "price", "image", "image_link", "category", "is_active")
         labels = {
             "name": "Tên sản phẩm",
             "description": "Mô tả",
             "price": "Giá bán",
-            "image": "Hình ảnh",
+            "image": "Tải ảnh lên",
+            "image_link": "Hoặc URL ảnh (Google Drive / URL trực tiếp)",
             "category": "Danh mục",
             "is_active": "Đang bán",
         }
-        widgets = {"description": forms.Textarea(attrs={"rows": 5})}
+        widgets = {
+            "description": forms.Textarea(attrs={"rows": 5}),
+            "image_link": forms.URLInput(attrs={"placeholder": "https://..."}),
+        }
+
+    def clean_image_link(self):
+        image_link = self.cleaned_data["image_link"].strip()
+        parsed = urlparse(image_link)
+        if parsed.hostname in {"drive.google.com", "www.drive.google.com"}:
+            file_id = parse_qs(parsed.query).get("id", [""])[0]
+            if not file_id:
+                parts = parsed.path.strip("/").split("/")
+                if len(parts) >= 3 and parts[0] == "file" and parts[1] == "d":
+                    file_id = parts[2]
+            if file_id:
+                return f"https://drive.google.com/uc?export=view&id={file_id}"
+        return image_link
+
+    def clean(self):
+        cleaned = super().clean()
+        if self.files.get("image") and cleaned.get("image_link"):
+            raise forms.ValidationError("Chọn tải ảnh lên hoặc nhập URL ảnh, không nhập cả hai.")
+        if not self.instance.pk and not cleaned.get("image") and not cleaned.get("image_link"):
+            self.add_error("image_link", "Vui lòng tải ảnh lên hoặc nhập URL ảnh.")
+        return cleaned
+
+    def save(self, commit=True):
+        product = super().save(commit=False)
+        if self.cleaned_data.get("image_link"):
+            product.image = None
+        elif self.files.get("image"):
+            product.image_link = ""
+        if commit:
+            product.save()
+            self.save_m2m()
+        return product
 
 
 class AdminCategoryForm(forms.ModelForm):

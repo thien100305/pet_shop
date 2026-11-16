@@ -207,10 +207,77 @@ def order_confirmation(request, order_id):
 
 @login_required
 def profile(request):
-    orders = list(Order.objects.filter(user=request.user).prefetch_related("items__product"))
+    orders = list(Order.objects.filter(user=request.user).prefetch_related("items__product")[:5])
     for order in orders:
         order.refresh_delivery_status()
     return render(request, "profile.html", {"orders": orders})
+
+
+@login_required
+def my_orders(request):
+    selected_status = request.GET.get("status", "")
+    query = request.GET.get("q", "").strip()
+    orders = Order.objects.filter(user=request.user).prefetch_related("items__product", "status_history")
+    if selected_status in dict(Order.STATUS_CHOICES):
+        orders = orders.filter(status=selected_status)
+    else:
+        selected_status = ""
+    if query:
+        conditions = Q(tracking_number__icontains=query) | Q(items__product__name__icontains=query)
+        if query.lstrip("#").isdigit():
+            conditions |= Q(id=int(query.lstrip("#")))
+        orders = orders.filter(conditions).distinct()
+    page_obj = Paginator(orders, 8).get_page(request.GET.get("page"))
+    for order in page_obj.object_list:
+        order.refresh_delivery_status()
+    status_counts = {
+        row["status"]: row["total"]
+        for row in Order.objects.filter(user=request.user).order_by().values("status").annotate(total=Count("id"))
+    }
+    tabs = [{"value": "", "label": "Tất cả", "count": Order.objects.filter(user=request.user).count()}]
+    tabs.extend({"value": value, "label": label, "count": status_counts.get(value, 0)} for value, label in Order.STATUS_CHOICES)
+    return render(request, "my_orders.html", {
+        "orders": page_obj, "tabs": tabs, "selected_status": selected_status, "query": query,
+    })
+
+
+@login_required
+@require_POST
+def cancel_order(request, order_id):
+    with transaction.atomic():
+        order = get_object_or_404(Order.objects.select_for_update(), id=order_id, user=request.user)
+        if order.status != "pending":
+            messages.error(request, "Chỉ có thể hủy đơn hàng đang chờ xác nhận.")
+            return redirect("order_detail", order_id=order.id)
+        order.status = "cancelled"
+        order.save(update_fields=["status", "updated_at"])
+        OrderStatusHistory.objects.create(
+            order=order, status="cancelled", actor=request.user,
+            note=request.POST.get("reason", "").strip() or "Khách hàng đã hủy đơn.",
+        )
+    messages.success(request, f"Đã hủy đơn hàng #{order.id}.")
+    return redirect("my_orders")
+
+
+@login_required
+@require_POST
+def reorder(request, order_id):
+    order = get_object_or_404(Order.objects.prefetch_related("items__product"), id=order_id, user=request.user)
+    cart_obj, _ = Cart.objects.get_or_create(user=request.user)
+    added = 0
+    with transaction.atomic():
+        for old_item in order.items.all():
+            if not old_item.product.is_active:
+                continue
+            item, created = CartItem.objects.get_or_create(cart=cart_obj, product=old_item.product)
+            item.quantity = old_item.quantity if created else min(item.quantity + old_item.quantity, 99)
+            item.save(update_fields=["quantity", "updated_at"])
+            added += 1
+    if added:
+        messages.success(request, f"Đã thêm {added} sản phẩm từ đơn #{order.id} vào giỏ hàng.")
+        return redirect("cart")
+    messages.warning(request, "Các sản phẩm trong đơn này hiện không còn bán.")
+    return redirect("order_detail", order_id=order.id)
 
 
 @login_required

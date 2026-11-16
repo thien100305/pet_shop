@@ -25,7 +25,8 @@ class Product(models.Model):
     name = models.CharField(max_length=200, verbose_name="Tên sản phẩm")
     description = models.TextField(verbose_name="Mô tả")
     price = models.DecimalField(max_digits=12, decimal_places=0, validators=[MinValueValidator(0)], verbose_name="Giá")
-    image = models.ImageField(upload_to="products/", verbose_name="Hình ảnh")
+    image = models.ImageField(upload_to="products/", blank=True, verbose_name="Ảnh tải lên")
+    image_link = models.URLField(max_length=1000, blank=True, verbose_name="URL hình ảnh")
     category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name="products", verbose_name="Danh mục")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Ngày tạo")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Ngày cập nhật")
@@ -38,6 +39,13 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def image_src(self):
+        """Return the configured remote image or uploaded file URL."""
+        if self.image_link:
+            return self.image_link
+        return self.image.url if self.image else ""
 
 
 class Cart(models.Model):

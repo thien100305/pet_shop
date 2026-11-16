@@ -1,0 +1,48 @@
+{% load static %}
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="FishShop - cửa hàng cá cảnh chất lượng và uy tín">
+  <title>{% block title %}FishShop{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="{% static 'css/store.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  <div class="topbar"><div class="container topbar-inner"><span><i class="fa-solid fa-fish"></i> Miễn phí tư vấn chăm sóc cá cảnh</span><span>Hotline: 0398 448 438</span></div></div>
+  <header class="site-nav">
+    <div class="container nav-inner">
+      <a class="brand" href="{% url 'home' %}"><span class="brand-mark brand-icon" aria-hidden="true"><i class="fa-solid fa-fish-fins"></i></span><span>FishShop</span></a>
+      <nav class="nav-links" aria-label="Điều hướng chính">
+        <a class="nav-link" href="{% url 'home' %}">Trang chủ</a>
+        {% if user.is_authenticated %}<a class="nav-link" href="{% url 'my_orders' %}"><i class="fa-solid fa-box"></i> Đơn mua</a>{% endif %}
+        {% if user.is_staff %}<a class="nav-link" href="{% url 'admin_dashboard' %}">Quản trị</a>{% endif %}
+      </nav>
+      <form class="search-form" action="{% url 'search' %}" method="get" role="search">
+        <input name="q" value="{{ request.GET.q }}" placeholder="Tìm sản phẩm..." aria-label="Tìm sản phẩm">
+        <button aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button>
+      </form>
+      <div class="nav-actions">
+        {% if user.is_authenticated %}
+          <a class="btn icon-btn" href="{% url 'cart' %}" aria-label="Giỏ hàng"><i class="fa-solid fa-bag-shopping"></i><span class="cart-badge">{{ cart_count|default:0 }}</span></a>
+          <a class="btn btn-outline account-link" href="{% url 'profile' %}"><i class="fa-regular fa-user"></i> {{ user.username }}</a>
+          <form action="{% url 'logout' %}" method="post">{% csrf_token %}<button class="btn btn-outline" aria-label="Đăng xuất"><i class="fa-solid fa-arrow-right-from-bracket"></i></button></form>
+        {% else %}
+          <a class="btn btn-outline" href="{% url 'login' %}">Đăng nhập</a><a class="btn btn-primary account-link" href="{% url 'register' %}">Đăng ký</a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+  <main class="site-main">
+    {% if messages %}<div class="container messages">{% for message in messages %}<div class="alert alert-{{ message.tags }}">{{ message }}</div>{% endfor %}</div>{% endif %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="footer"><div class="container"><div class="footer-grid"><div><a class="brand" href="{% url 'home' %}" style="color:white"><span class="brand-mark brand-icon" aria-hidden="true"><i class="fa-solid fa-fish-fins"></i></span>FishShop</a><p>Đồng hành cùng bạn trong hành trình nuôi cá cảnh bằng những giống cá khỏe đẹp và dịch vụ tư vấn tận tâm.</p></div><div><h3>Khám phá</h3><p><a href="{% url 'home' %}">Các loài cá</a></p><p><a href="{% url 'cart' %}">Giỏ hàng</a></p><p><a href="{% url 'my_orders' %}">Theo dõi đơn mua</a></p><p><a href="{% url 'profile' %}">Tài khoản</a></p></div><div><h3>Liên hệ</h3><p><i class="fa-solid fa-location-dot"></i> 472 Núi Thành, Đà Nẵng</p><p><i class="fa-solid fa-phone"></i> 0398 448 438</p><p><i class="fa-solid fa-envelope"></i> thien100305@gmail.com</p></div></div><div class="footer-bottom">© {% now "Y" %} FishShop. All rights reserved.</div></div></footer>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

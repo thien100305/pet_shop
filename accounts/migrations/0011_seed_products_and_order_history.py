@@ -2,26 +2,16 @@ from django.db import migrations
 
 
 PRODUCTS = [
-    ("Chó cảnh", "Chó Poodle Toy nâu đỏ", "Poodle nhỏ nhắn, thông minh, đã tiêm phòng và quen ăn hạt.", 6500000, "products/1.jpg"),
-    ("Chó cảnh", "Chó Corgi Pembroke", "Corgi chân ngắn khỏe mạnh, thân thiện và phù hợp với gia đình.", 12500000, "products/2.jpg"),
-    ("Chó cảnh", "Chó Golden Retriever", "Golden hiền lành, năng động, có sổ theo dõi sức khỏe.", 9800000, "products/3.jpg"),
-    ("Chó cảnh", "Chó Pomeranian trắng", "Phốc sóc lông trắng dày, lanh lợi và quấn chủ.", 8900000, "products/4.jpg"),
-    ("Chó cảnh", "Chó Shiba Inu vàng", "Shiba thuần chủng, nhanh nhẹn, đã được huấn luyện cơ bản.", 14500000, "products/5.jpg"),
-    ("Mèo cảnh", "Mèo Anh lông dài", "Bé mèo lông dài mềm mượt, tính cách điềm tĩnh và dễ gần.", 7200000, "products/6.jpg"),
-    ("Mèo cảnh", "Mèo Scottish tai cụp", "Mèo tai cụp đáng yêu, khỏe mạnh, thích nghi tốt trong căn hộ.", 6800000, "products/7.jpg"),
-    ("Mèo cảnh", "Mèo Ragdoll mắt xanh", "Ragdoll hiền, bộ lông hai màu đẹp và đôi mắt xanh nổi bật.", 11000000, "products/8.jpg"),
-    ("Mèo cảnh", "Mèo Bengal vân báo", "Bengal năng động với bộ lông vân báo đặc trưng.", 13500000, "products/9.jpg"),
-    ("Mèo cảnh", "Mèo Munchkin chân ngắn", "Munchkin chân ngắn, vui vẻ và thân thiện với trẻ nhỏ.", 10500000, "products/10.jpg"),
-    ("Phụ kiện", "Balo phi hành gia cho thú cưng", "Balo thoáng khí, cửa sổ trong suốt, phù hợp chó mèo dưới 8 kg.", 459000, "products/1.jpg"),
-    ("Phụ kiện", "Đệm ngủ tròn lông mềm", "Đệm êm, giữ ấm tốt, vỏ có thể tháo giặt.", 329000, "products/2.jpg"),
-    ("Phụ kiện", "Dây dắt phản quang cao cấp", "Dây dắt chắc chắn, có dải phản quang và tay cầm êm.", 189000, "products/3.jpg"),
-    ("Phụ kiện", "Trụ cào móng cho mèo", "Trụ cào móng bọc sợi sisal bền, có đồ chơi treo.", 549000, "products/4.jpg"),
-    ("Phụ kiện", "Bát ăn đôi chống trượt", "Bộ hai bát inox tháo rời, đế chống trượt dễ vệ sinh.", 159000, "products/5.jpg"),
-    ("Thức ăn", "Hạt cho mèo trưởng thành 2 kg", "Công thức giàu đạm, hỗ trợ tiêu hóa và giảm búi lông.", 385000, "products/6.jpg"),
-    ("Thức ăn", "Hạt cho chó con 3 kg", "Dinh dưỡng cân bằng giúp chó con phát triển xương và cơ bắp.", 425000, "products/7.jpg"),
-    ("Thức ăn", "Pate cá ngừ cho mèo 12 hộp", "Pate cá ngừ mềm, bổ sung nước và taurine cho mèo.", 288000, "products/8.jpg"),
-    ("Thức ăn", "Snack thịt gà sấy 500 g", "Thịt gà sấy ít béo, dùng làm phần thưởng khi huấn luyện.", 219000, "products/9.jpg"),
-    ("Thức ăn", "Sữa dinh dưỡng cho thú cưng", "Sữa dễ tiêu hóa, bổ sung canxi cho chó mèo nhỏ.", 175000, "products/10.jpg"),
+    ("Cá cảnh nước ngọt", "Cá Betta Halfmoon đỏ xanh", "Betta Halfmoon nổi bật với bộ vây xòe rộng, màu đỏ xanh rực rỡ; thích hợp nuôi riêng trong bể nhỏ.", 180000, "products/ca-betta.png"),
+    ("Cá cảnh nước ngọt", "Cá bảy màu Full Gold", "Cá bảy màu Full Gold khỏe mạnh, dễ nuôi và có sắc vàng ánh kim nổi bật trong bể thủy sinh.", 85000, "products/ca-bay-mau.png"),
+    ("Cá cảnh nước ngọt", "Cá thần tiên Koi", "Cá thần tiên Koi có thân dẹt thanh lịch, hoa văn cam trắng đẹp mắt và tính cách tương đối ôn hòa.", 150000, "products/ca-than-tien.png"),
+    ("Cá cảnh nước ngọt", "Cá dĩa Red Melon", "Cá dĩa Red Melon dáng tròn cân đối, sắc đỏ cam nổi bật; phù hợp với bể nước ấm được chăm sóc ổn định.", 650000, "products/ca-dia.png"),
+    ("Cá cảnh nước ngọt", "Cá rồng Kim Long Quá Bối", "Cá rồng Kim Long có hàng vảy ánh vàng sang trọng, dáng bơi uyển chuyển và được tuyển chọn khỏe mạnh.", 12500000, "products/ca-rong.png"),
+    ("Cá cảnh nước ngọt", "Cá Neon vua", "Cá Neon vua có dải màu xanh đỏ óng ánh, thích hợp nuôi theo đàn trong bể thủy sinh yên tĩnh.", 35000, "products/ca-neon.png"),
+    ("Cá cảnh biển", "Cá hề Ocellaris", "Cá hề Ocellaris màu cam trắng đặc trưng, năng động và phù hợp với bể cá biển có hệ thống ổn định.", 320000, "products/ca-he.png"),
+    ("Cá cảnh biển", "Cá đuôi gai xanh", "Cá đuôi gai xanh mang sắc xanh lam nổi bật, cần không gian bơi rộng và chế độ chăm sóc bể biển phù hợp.", 950000, "products/ca-duoi-gai-xanh.png"),
+    ("Cá Koi", "Cá Koi Kohaku", "Koi Kohaku có nền trắng tinh và mảng đỏ cân đối, được tuyển chọn theo dáng bơi và chất lượng màu sắc.", 1800000, "products/ca-koi-kohaku.png"),
+    ("Cá Koi", "Cá Koi Showa", "Koi Showa sở hữu ba màu đỏ, trắng, đen tương phản mạnh; phù hợp làm điểm nhấn cho hồ sân vườn.", 2200000, "products/ca-koi-showa.png"),
 ]
 
 
@@ -33,10 +23,9 @@ def seed_data(apps, schema_editor):
 
     categories = {}
     descriptions = {
-        "Chó cảnh": "Những người bạn trung thành và năng động",
-        "Mèo cảnh": "Những người bạn nhỏ đáng yêu",
-        "Phụ kiện": "Phụ kiện chăm sóc thú cưng",
-        "Thức ăn": "Dinh dưỡng phù hợp cho thú cưng",
+        "Cá cảnh nước ngọt": "Các loài cá nhiều màu sắc, phù hợp bể thủy sinh và bể gia đình",
+        "Cá cảnh biển": "Những loài cá biển rực rỡ dành cho hệ thống hồ nước mặn",
+        "Cá Koi": "Các dòng cá Koi được tuyển chọn cho hồ sân vườn",
     }
     for name, description in descriptions.items():
         categories[name], _ = Category.objects.get_or_create(name=name, defaults={"description": description})
@@ -45,14 +34,18 @@ def seed_data(apps, schema_editor):
         Product.objects.get_or_create(
             name=name,
             defaults={
-                "category": categories[category_name], "description": description,
-                "price": price, "image": image, "is_active": True,
+                "category": categories[category_name],
+                "description": description,
+                "price": price,
+                "image": image,
+                "is_active": True,
             },
         )
 
     for order in Order.objects.all().iterator():
         OrderStatusHistory.objects.get_or_create(
-            order=order, status=order.status,
+            order=order,
+            status=order.status,
             defaults={"note": "Trạng thái được chuyển từ dữ liệu đơn hàng trước đây."},
         )
 

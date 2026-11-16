@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import CartItem, Category, Order, OrderStatusHistory, Product
+from .models import CartItem, Category, Order, OrderItem, OrderStatusHistory, Product
 
 
 class StoreFlowTests(TestCase):
@@ -10,10 +10,10 @@ class StoreFlowTests(TestCase):
     def setUpTestData(cls):
         cls.user = User.objects.create_user(username="customer", email="customer@example.com", password="StrongPass123!")
         cls.staff = User.objects.create_user(username="manager", password="StrongPass123!", is_staff=True)
-        category = Category.objects.create(name="Thú cưng kiểm thử")
+        category = Category.objects.create(name="Cá cảnh kiểm thử")
         cls.product = Product.objects.create(
-            name="Mèo Anh lông ngắn", description="Khỏe mạnh", price=5000000,
-            category=category, image="products/1.jpg",
+            name="Cá Betta kiểm thử", description="Khỏe mạnh", price=180000,
+            category=category, image="products/ca-betta.png",
         )
 
     def test_home_and_product_pages(self):
@@ -45,12 +45,12 @@ class StoreFlowTests(TestCase):
         order = Order.objects.create(
             user=self.user, full_name="Nguyễn Văn A", email=self.user.email,
             phone="0900000000", address="Đà Nẵng", payment_method="cod",
-            total_amount=self.product.price, status="shipping", tracking_number="PET123456",
+            total_amount=self.product.price, status="shipping", tracking_number="FISH123456",
         )
         OrderStatusHistory.objects.create(order=order, status="shipping", note="Đơn đang trên đường giao.")
         self.client.force_login(self.user)
         detail = self.client.get(reverse("order_detail", args=[order.id]))
-        self.assertContains(detail, "PET123456")
+        self.assertContains(detail, "FISH123456")
         self.assertContains(detail, "Đơn đang trên đường giao")
         response = self.client.post(reverse("confirm_received", args=[order.id]))
         self.assertRedirects(response, reverse("order_detail", args=[order.id]))
@@ -66,7 +66,7 @@ class StoreFlowTests(TestCase):
         )
         self.client.force_login(self.staff)
         url = reverse("admin_update_order", args=[order.id])
-        self.client.post(url, {"status": "shipping", "tracking_number": "PET001"})
+        self.client.post(url, {"status": "shipping", "tracking_number": "FISH001"})
         order.refresh_from_db()
         self.assertEqual(order.status, "pending")
         self.client.post(url, {"status": "confirmed", "note": "Shop đã xác nhận."})
@@ -79,3 +79,30 @@ class StoreFlowTests(TestCase):
         self.assertEqual(self.client.get(reverse("admin_dashboard")).status_code, 302)
         self.client.force_login(self.staff)
         self.assertEqual(self.client.get(reverse("admin_dashboard")).status_code, 200)
+
+    def test_admin_api_requires_staff_and_lists_products(self):
+        self.client.force_login(self.user)
+        self.assertEqual(self.client.get(reverse("admin-api-dashboard")).status_code, 403)
+        self.client.force_login(self.staff)
+        dashboard = self.client.get(reverse("admin-api-dashboard"))
+        self.assertEqual(dashboard.status_code, 200)
+        self.assertIn("summary", dashboard.json())
+        products = self.client.get(reverse("admin-api-products-list"))
+        self.assertEqual(products.status_code, 200)
+        self.assertEqual(products.json()["count"], Product.objects.count())
+
+    def test_customer_can_track_cancel_and_reorder(self):
+        order = Order.objects.create(
+            user=self.user, full_name="Nguyễn Văn A", email=self.user.email,
+            phone="0900000000", address="Đà Nẵng", payment_method="cod",
+            total_amount=self.product.price,
+        )
+        OrderItem.objects.create(order=order, product=self.product, quantity=2, price=self.product.price)
+        self.client.force_login(self.user)
+        self.assertEqual(self.client.get(reverse("my_orders")).status_code, 200)
+        self.client.post(reverse("cancel_order", args=[order.id]), {"reason": "Đổi nhu cầu"})
+        order.refresh_from_db()
+        self.assertEqual(order.status, "cancelled")
+        self.assertTrue(OrderStatusHistory.objects.filter(order=order, status="cancelled").exists())
+        self.client.post(reverse("reorder", args=[order.id]))
+        self.assertEqual(CartItem.objects.get(cart__user=self.user, product=self.product).quantity, 2)
