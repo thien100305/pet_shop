@@ -2,29 +2,20 @@
 
 Ứng dụng thương mại điện tử Django dành cho cửa hàng cá cảnh. Dự án có danh mục cá, giỏ hàng, thanh toán, theo dõi đơn hàng, đánh giá và dashboard quản trị.
 
-## Khởi tạo database bằng SQL Server Management Studio
+## Database SQLite
 
-1. Mở SQL Server Management Studio và kết nối bằng tài khoản có quyền tạo database.
-2. Mở file `FishShop.sql`, sau đó chạy toàn bộ script. Script sẽ tạo database `FishShopDB`, schema và 50 sản phẩm cá mẫu.
-3. Cài **Microsoft ODBC Driver 18 for SQL Server** trên máy chạy Django.
-4. Tạo môi trường Python và cài thư viện:
+Ứng dụng lưu dữ liệu trong file `db.sqlite3` ở thư mục dự án. Django tạo schema bằng migration:
 
-   ```powershell
-   python -m venv .venv
-   .\.venv\Scripts\Activate.ps1
-   pip install -r requirements.txt
-   ```
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py runserver
+```
 
-5. Sửa các giá trị `DB_HOST`, `DB_USER`, `DB_PASSWORD` trong `.env` cho đúng SQL Server của bạn. Tên database mặc định là `FishShopDB`.
-6. Hoàn tất hai migration cuối, tạo tài khoản quản trị và chạy dự án:
-
-   ```powershell
-   python manage.py migrate
-   python manage.py createsuperuser
-   python manage.py runserver
-   ```
-
-Dự án chỉ cấu hình Microsoft SQL Server, không còn dùng SQLite.
+Khi deploy, ch?p file `db.sqlite3` n?y l?n ? ??a b?n v?ng c?a EC2 v? ??t `SQLITE_PATH` t?i file ?? (v? d? `/data/db.sqlite3`). H?y mount `/data` t? ? ??a b?n v?ng ?? d? li?u c?n nguy?n sau khi c?p nh?t ho?c t?o l?i container. Kh?ng ??a database ch?a d? li?u ng??i d?ng l?n Git.
 
 ## Các trang chính
 

@@ -6,3 +6,4 @@ staticfiles/
 venv/
 .idea/
 .vscode/
+*.sqlite3
