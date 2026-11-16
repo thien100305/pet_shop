@@ -70,7 +70,7 @@ class OrderStatusHistorySerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(source="user.username", read_only=True)
+    username = serializers.CharField(source="user.username", read_only=True, allow_null=True, default=None)
     status_label = serializers.CharField(source="get_status_display", read_only=True)
     payment_label = serializers.CharField(source="get_payment_method_display", read_only=True)
     items = OrderItemSerializer(many=True, read_only=True)

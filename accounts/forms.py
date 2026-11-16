@@ -79,6 +79,19 @@ class AdminCategoryForm(forms.ModelForm):
         widgets = {"description": forms.Textarea(attrs={"rows": 4})}
 
 
+class AdminCustomerForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ("username", "first_name", "last_name", "email", "is_active")
+        labels = {
+            "username": "Tên đăng nhập",
+            "first_name": "Tên",
+            "last_name": "Họ",
+            "email": "Email",
+            "is_active": "Tài khoản đang hoạt động",
+        }
+
+
 class CheckoutForm(forms.Form):
     full_name = forms.CharField(max_length=100, label="Họ và tên")
     email = forms.EmailField(label="Email")

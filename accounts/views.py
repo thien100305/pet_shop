@@ -14,7 +14,7 @@ from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
-from .forms import AdminCategoryForm, AdminProductForm, CheckoutForm, ProfileForm, RegisterForm
+from .forms import AdminCategoryForm, AdminCustomerForm, AdminProductForm, CheckoutForm, ProfileForm, RegisterForm
 from .models import Cart, CartItem, Category, Order, OrderItem, OrderStatusHistory, Product, Review, UserProfile
 
 
@@ -211,7 +211,8 @@ def profile(request):
     orders = list(Order.objects.filter(user=request.user).prefetch_related("items__product")[:5])
     for order in orders:
         order.refresh_delivery_status()
-    return render(request, "profile.html", {"orders": orders})
+    profile_obj, _ = UserProfile.objects.get_or_create(user=request.user)
+    return render(request, "profile.html", {"orders": orders, "profile": profile_obj})
 
 
 @login_required
@@ -405,6 +406,27 @@ def admin_users(request):
         "users": Paginator(users, 20).get_page(request.GET.get("page")),
         "query": query,
     })
+
+
+@staff_required
+def admin_customer_edit(request, user_id):
+    customer = get_object_or_404(User, id=user_id, is_staff=False, is_superuser=False)
+    form = AdminCustomerForm(request.POST or None, instance=customer)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, f"Đã cập nhật tài khoản {customer.username}.")
+        return redirect("admin_users")
+    return render(request, "admin/user_form.html", {"form": form, "customer": customer})
+
+
+@staff_required
+@require_POST
+def admin_customer_delete(request, user_id):
+    customer = get_object_or_404(User, id=user_id, is_staff=False, is_superuser=False)
+    username = customer.username
+    customer.delete()
+    messages.success(request, f"Đã xóa tài khoản {username}. Lịch sử đơn hàng vẫn được giữ.")
+    return redirect("admin_users")
 
 
 @staff_required

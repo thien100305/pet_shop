@@ -95,7 +95,7 @@ class Order(models.Model):
         "review": (),
         "cancelled": (),
     }
-    user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="orders")
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="orders")
     full_name = models.CharField(max_length=100)
     email = models.EmailField()
     phone = models.CharField(max_length=20)
