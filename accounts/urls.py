@@ -1,4 +1,4 @@
-"""Compatibility URL module; the project routes are defined in fishshop.urls."""
+"""Compatibility URL module; the project routes are defined in ecommerce.urls."""
 
 from django.urls import path
 

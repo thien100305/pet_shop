@@ -40,4 +40,4 @@ Dự án chỉ cấu hình Microsoft SQL Server, không còn dùng SQLite.
 
 API quản trị hỗ trợ Session Authentication và Basic Authentication, chỉ tài khoản staff/superuser mới được truy cập. Các danh sách hỗ trợ phân trang; sản phẩm, đơn hàng, khách hàng và đánh giá hỗ trợ tìm kiếm/lọc qua query string `q` cùng các bộ lọc riêng.
 
-Ảnh sản phẩm cá nằm trong `media/products/`; ảnh banner nằm tại `fishshop/static/images/fishshop-hero.png`.
+Ảnh sản phẩm cá nằm trong `media/products/`; ảnh banner nằm tại `ecommerce/static/images/fishshop-hero.png`.

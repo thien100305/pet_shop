@@ -34,10 +34,10 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware", "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware", "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
-ROOT_URLCONF = "fishshop.urls"
+ROOT_URLCONF = "ecommerce.urls"
 TEMPLATES = [{
     "BACKEND": "django.template.backends.django.DjangoTemplates",
-    "DIRS": [BASE_DIR / "fishshop" / "templates", BASE_DIR / "accounts" / "templates"],
+    "DIRS": [BASE_DIR / "ecommerce" / "templates", BASE_DIR / "accounts" / "templates"],
     "APP_DIRS": True,
     "OPTIONS": {"context_processors": [
         "django.template.context_processors.debug", "django.template.context_processors.request",
@@ -45,7 +45,7 @@ TEMPLATES = [{
         "accounts.context_processors.store_context",
     ]},
 }]
-WSGI_APPLICATION = "fishshop.wsgi.application"
+WSGI_APPLICATION = "ecommerce.wsgi.application"
 
 
 # Database configuration
@@ -95,7 +95,7 @@ USE_I18N = True
 USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_DIRS = [BASE_DIR / "fishshop" / "static"]
+STATICFILES_DIRS = [BASE_DIR / "ecommerce" / "static"]
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {
