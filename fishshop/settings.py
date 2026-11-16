@@ -47,18 +47,41 @@ TEMPLATES = [{
 }]
 WSGI_APPLICATION = "fishshop.wsgi.application"
 
-DATABASES = {"default": {
-    "ENGINE": "mssql",
-    "NAME": os.getenv("DB_NAME", "FishShopDB"),
-    "USER": os.getenv("DB_USER", "sa"),
-    "PASSWORD": os.getenv("DB_PASSWORD", ""),
-    "HOST": os.getenv("DB_HOST", "localhost"),
-    "PORT": os.getenv("DB_PORT", "1433"),
-    "OPTIONS": {
-        "driver": os.getenv("DB_DRIVER", "ODBC Driver 18 for SQL Server"),
-        "extra_params": os.getenv("DB_EXTRA_PARAMS", "TrustServerCertificate=yes"),
-    },
-}}
+
+# Database configuration
+DB_ENGINE = os.getenv("DB_ENGINE", "mssql").lower()
+
+if DB_ENGINE == "sqlite":
+    # Dùng SQLite riêng cho Jenkins CI/test
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "test_db.sqlite3",
+        }
+    }
+else:
+    # Mặc định vẫn sử dụng Microsoft SQL Server
+    DATABASES = {
+        "default": {
+            "ENGINE": "mssql",
+            "NAME": os.getenv("DB_NAME", "FishShopDB"),
+            "USER": os.getenv("DB_USER", "sa"),
+            "PASSWORD": os.getenv("DB_PASSWORD", ""),
+            "HOST": os.getenv("DB_HOST", "localhost"),
+            "PORT": os.getenv("DB_PORT", "1433"),
+            "OPTIONS": {
+                "driver": os.getenv(
+                    "DB_DRIVER",
+                    "ODBC Driver 18 for SQL Server"
+                ),
+                "extra_params": os.getenv(
+                    "DB_EXTRA_PARAMS",
+                    "TrustServerCertificate=yes"
+                ),
+            },
+        }
+    }
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
