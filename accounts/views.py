@@ -432,12 +432,13 @@ def admin_product_edit(request, product_id):
 @require_POST
 def admin_product_delete(request, product_id):
     product = get_object_or_404(Product, id=product_id)
-    try:
+    with transaction.atomic():
         name = product.name
+        # Remove protected order lines first so admins can delete products
+        # even when they appear in existing orders.
+        OrderItem.objects.filter(product=product).delete()
         product.delete()
-        messages.success(request, f"Đã xóa sản phẩm {name}.")
-    except ProtectedError:
-        messages.error(request, "Không thể xóa sản phẩm đã xuất hiện trong đơn hàng. Hãy tắt trạng thái đang bán.")
+    messages.success(request, f"Đã xóa sản phẩm {name} và các dòng đơn hàng liên quan.")
     return redirect("admin_products")
 
 
